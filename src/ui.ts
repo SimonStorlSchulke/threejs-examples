@@ -32,7 +32,7 @@ export function addSlider(name: string, min: number, max: number, value: number,
     callback(+val);
     ui.querySelector(`#label-${name}`)!.innerHTML = label;
   },
-    20);
+    100);
 
 
   input.addEventListener("input", (event) => {

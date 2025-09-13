@@ -22,6 +22,7 @@ export type TerrainArgs = {
   resolution: number,
   posX: number,
   posZ: number,
+  renderDistance: number,
 }
 
 export function generateTerrain(args: TerrainArgs) {

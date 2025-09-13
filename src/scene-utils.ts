@@ -28,7 +28,7 @@ export function addOrbitControle(startPosition: Vector3 = new Vector3()) {
   controls.screenSpacePanning = false;
 
   controls.minDistance = 1;
-  controls.maxDistance = 20;
+  controls.maxDistance = 50;
 
   controls.maxPolarAngle = Math.PI / 2;
 

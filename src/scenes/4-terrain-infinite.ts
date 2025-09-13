@@ -32,11 +32,12 @@ export function terrainInfiniteScene(this: any) {
     depth: 10,
     posX: 0,
     posZ: 0,
+    renderDistance: 5,
   }
 
   RENDERER.toneMapping = AgXToneMapping;
   addSky(70, 120);
-  SCENE.fog = new Fog( 0xd3dde2, 4, 33 );
+  SCENE.fog = new Fog( 0xd3dde2, 4, args.renderDistance * 10 - 2 );
   CAMERA.position.set(-3, 4, 8);
   CAMERA.rotation.x -= 0.4;
   CAMERA.rotation.y -= 0.2;
@@ -79,7 +80,9 @@ export function terrainInfiniteScene(this: any) {
     const camX = Math.round(camPosInGrid.x);
     const camZ = Math.round(camPosInGrid.z);
 
-    for (const gridKey of getNearbyKeys(camPosInGrid, 5)) {
+    const renderDistance = Math.floor(args.renderDistance);
+
+    for (const gridKey of getNearbyKeys(camPosInGrid, renderDistance)) {
 
       const iX = +gridKey.split(',')[0];
       const iZ = +gridKey.split(',')[1];
@@ -93,8 +96,6 @@ export function terrainInfiniteScene(this: any) {
         args.posX = iX * .4;
         args.posZ = iZ * .4;
 
-        console.log("generating chunk", gridKey, args.resolution)
-
         const newTerrain = new Mesh(generateTerrain(args), material);
         newTerrain.position.x = iX * 10;
         newTerrain.position.z = iZ * 10;
@@ -107,7 +108,7 @@ export function terrainInfiniteScene(this: any) {
       const iX = +gridKey.split(',')[0];
       const iZ = +gridKey.split(',')[1];
       const distanceToCamera = camPosInGrid.distanceTo(new Vector3(iX, 0, iZ));
-      if (distanceToCamera > 5) {
+      if (distanceToCamera > renderDistance) {
         SCENE.remove(terrainGrid.get(gridKey)!.mesh);
         terrainGrid.delete(gridKey);
       }
@@ -125,7 +126,10 @@ export function terrainInfiniteScene(this: any) {
         terrainGrid.delete(terrainKv[0]);
       }
 
-      lod()
+      SCENE.fog = new Fog( 0xd3dde2, 4, args.renderDistance * 10 - 2 );
+
+      lod();
+
 
     }
 
@@ -137,8 +141,6 @@ export function terrainInfiniteScene(this: any) {
     }
 
     argSlider('seed', -99999999, 99999999, 'number', true);
-    argSlider('gain', 0, 1);
-    argSlider('lacunarity', 0, 10);
     argSlider('frequency', 0, 0.3);
     argSlider('amplitude', 0, 3);
     argSlider('falloff', 0, 1);
@@ -147,10 +149,9 @@ export function terrainInfiniteScene(this: any) {
     argSlider('rivers', 0, 0.8);
     argSlider('riversSeed', -99999999, 99999999, 'number', true);
     argSlider('riverWidth', 0, 1);
-    argSlider('altitude', 0, 1);
+    argSlider('altitude', -1, 1);
     argSlider('offset', 0, 1);
-    argSlider('octaves', 1, 16);
-    argSlider('resolution', 8, 512);
+    argSlider('renderDistance', 2, 10);
   }
 
 
