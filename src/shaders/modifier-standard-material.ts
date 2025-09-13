@@ -2,7 +2,7 @@ import { glslCommon } from 'src/shaders/glsl_common.ts';
 import { MeshStandardMaterial } from 'three';
 
 export class ModifiedStandardMaterial extends MeshStandardMaterial {
-  constructor(private insertedGlsl: string) {
+  constructor(insertedGlsl: string) {
     super();
 
     this.onBeforeCompile = (shader) => {

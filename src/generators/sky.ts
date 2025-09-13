@@ -1,6 +1,6 @@
 import { addFrameCallback, SCENE } from 'src/setup-scene.ts';
 import { DirectionalLight, HemisphereLight, MathUtils, Vector3 } from 'three';
-import { Sky } from 'three/examples/jsm/objects/Sky';
+import { Sky } from 'three-stdlib';
 
 export function addSky(
   altitudeDegrees: number,

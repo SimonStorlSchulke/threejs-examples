@@ -15,13 +15,13 @@ export function addButton(name: string, callback: () => void) {
   ui.append(button);
 }
 
-export function addSlider(name: string, min: number, max: number, value: number, callback: (value: number) => void, type: 'range' | 'number' = 'range') {
+export function addSlider(name: string, min: number, max: number, value: number, callback: (value: number) => void, type: 'range' | 'number' = 'range', isInt = false) {
   const input = document.createElement('input');
   input.setAttribute('type', type);
   input.setAttribute('min', min.toString());
   input.setAttribute('min', min.toString());
   input.setAttribute('max', max.toString());
-  input.setAttribute('step', '0.001');
+  input.setAttribute('step', isInt ? '1' : '0.001');
   input.setAttribute('value', value.toString());
   input.id = name;
   input.setAttribute('name', name);

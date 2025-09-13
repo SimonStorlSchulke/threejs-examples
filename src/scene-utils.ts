@@ -1,5 +1,5 @@
 import { DirectionalLight, Vector3 } from "three";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three-stdlib';
 import { addFrameCallback, CAMERA, RENDERER, SCENE } from "./setup-scene";
 
 export function addThreePointLightSetup() {
@@ -22,7 +22,6 @@ export function addThreePointLightSetup() {
 export function addOrbitControle(startPosition: Vector3 = new Vector3()) {
   CAMERA.position.copy(startPosition);
   const controls = new OrbitControls( CAMERA, RENDERER.domElement );
-    controls.listenToKeyEvents( window );
   controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
   controls.dampingFactor = 0.05;
 
