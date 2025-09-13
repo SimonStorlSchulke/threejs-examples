@@ -1,6 +1,7 @@
 import { simpleScene } from "src/scenes/0-simple";
 import { lightScene } from 'src/scenes/1-light.ts';
 import { terrainScene } from 'src/scenes/3-terrain.ts';
+import { terrainInfiniteScene } from 'src/scenes/4-terrain-infinite.ts';
 import { wireBridgesScene } from "./scenes/2-wirebridges";
 import { initThree, resetScene } from "./setup-scene";
 import "./style.css";
@@ -12,6 +13,7 @@ const scenes = [
   lightScene,
   wireBridgesScene,
   terrainScene,
+  terrainInfiniteScene,
 ];
 
 

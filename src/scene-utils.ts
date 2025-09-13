@@ -36,3 +36,4 @@ export function addOrbitControle(startPosition: Vector3 = new Vector3()) {
   controls.update();
   })
 }
+

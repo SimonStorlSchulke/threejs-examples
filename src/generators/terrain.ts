@@ -35,6 +35,12 @@ export function generateTerrain(args: TerrainArgs) {
     .frequency(args.frequency)
     .build();
 
+  let fbmBiomes = new FbmNoiseBuilder()
+    .octaves(1)
+    .seed(args.seed + 4)
+    .frequency(0.012)
+    .build();
+
   let fbmErosion = new FbmNoiseBuilder()
     .octaves(3)
     .lacunarity(1.8)
@@ -64,10 +70,12 @@ export function generateTerrain(args: TerrainArgs) {
   displaceY(geometry, (x, z) => {
     let terrainNoise = fbm(x + args.posX * 25, z + args.posZ * 25);
 
+    const erosionNoise = fbmBiomes(x + 500 + args.posX * 25, z + 500 + args.posZ * 25) * 0.6 - .1;
+    const erosionSoftness = erosionNoise + args.erosionSoftness;
     let erosion = fbmErosion(x + args.posX * 25, z + args.posZ * 25);
 
     erosion = MathUtils.smoothstep(erosion, 0, 1);
-    erosion = Math.pow(erosion, 1 + args.erosionSoftness);
+    erosion = Math.pow(erosion, 1 + erosionSoftness);
     erosion = MathUtils.clamp(MathUtils.pingpong(erosion * 2, 1) - 0.3, 0, 100);
 
     terrainNoise *= MathUtils.lerp(1, erosion, args.erosion * terrainNoise);
@@ -78,7 +86,11 @@ export function generateTerrain(args: TerrainArgs) {
     rivers = Math.abs(MathUtils.clamp(rivers, 0, riverWidth) * 3);
 
     rivers = MathUtils.smoothstep(MathUtils.mapLinear(rivers, .36, .95, 0, .8), 0, 1);
-    return terrainNoise + args.altitude - rivers * args.rivers;
+
+    const altitudeNoise = fbmBiomes(x + args.posX * 25, z + args.posZ * 25) * 1.4 - .75;
+    const altitude = args.altitude + altitudeNoise;
+
+    return terrainNoise + altitude - rivers * args.rivers;
   }, 2.5, strengthFn)
 
   return geometry;

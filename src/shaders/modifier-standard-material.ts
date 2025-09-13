@@ -50,7 +50,7 @@ export class ModifiedStandardMaterial extends MeshStandardMaterial {
           #include <shadowmap_vertex>
           #include <fog_vertex>
           
-          v_Position = position;
+          v_Position = (modelMatrix * vec4(position, 1.0)).xyz;
           v_Normal = normal;
           
         #ifdef USE_TRANSMISSION
