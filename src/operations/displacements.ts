@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BufferGeometry } from 'three';
+import { BufferGeometry, MathUtils } from 'three';
 
 export function displaceY(
   geometry: BufferGeometry,
@@ -13,7 +13,7 @@ export function displaceY(
     const x = position.getX(i);
     const z = position.getZ(i);
     let newY = yFunction(x, z) * strength;
-    newY = newY * strengthFn(x, newY, z)
+    newY = MathUtils.lerp(0, newY, strengthFn(x, newY, z))
     position.setY(i, newY );
   }
   position.needsUpdate = true;

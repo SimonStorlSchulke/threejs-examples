@@ -86,7 +86,7 @@ export function terrainScene(this: any) {
     }
 
     displaceY(geometry, (x, z) => {
-      let terrainNoise = Math.abs(fbm(x + args.posX * 25, z + args.posZ * 25)) / 2;
+      let terrainNoise = fbm(x + args.posX * 25, z + args.posZ * 25);
 
       let erosion = fbmErosion(x + args.posX * 25, z + args.posZ * 25);
 
@@ -127,6 +127,7 @@ export function terrainScene(this: any) {
     argSlider('lacunarity', 0, 10);
     argSlider('frequency', 0, 0.3);
     argSlider('amplitude', 0, 3);
+    argSlider('falloff', 0, 1);
     argSlider('erosion', 0, 0.7);
     argSlider('erosionSoftness', 0, 1);
     argSlider('rivers', 0, 0.8);
@@ -143,13 +144,14 @@ export function terrainScene(this: any) {
 
   function terrainFalloff(width: number, depth: number, fallOff: number) {
     return (x: number, _: number, z: number) => {
-      let xRel = x / (width * 0.5);
-      let heightX = MathUtils.mapLinear(xRel, -1, 1, 0, 1);
+      let xRel = (x / width) + 0.5 ;
+      let zRel = (z / depth) + 0.5 ;
 
-      let zRel = z / (depth * 0.5);
-      let heightZ = MathUtils.mapLinear(zRel, -1, 1, 0, 1);
+      let pingpongX = MathUtils.smoothstep(MathUtils.mapLinear(MathUtils.pingpong(xRel, 0.5), 0, .3, 0, 1), 0, 1);
 
-      return Math.pow(heightX * heightZ, fallOff);
+      let pingpongZ = MathUtils.smoothstep(MathUtils.mapLinear(MathUtils.pingpong(zRel, 0.5), 0, .3, 0, 1), 0, 1);
+
+      return MathUtils.lerp(1, pingpongX * pingpongZ, fallOff);
     }
   }
 }
