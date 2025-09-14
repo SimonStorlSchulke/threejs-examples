@@ -28,7 +28,7 @@ canvas {
 }
 
 
-.switch-buttons {
+.switch-buttons, .explanation {
   position: fixed;
   box-sizing: border-box;
   bottom: 0;
@@ -36,6 +36,7 @@ canvas {
   justify-content: space-between;
   width: 100dvw;
   padding: 12px;
+  color: #fff;
 }
 
 .switch-buttons button {
