@@ -1,7 +1,7 @@
 import { addSky } from 'src/generators/sky.ts';
 import { TerrainArgs } from 'src/generators/terrain.ts';
 import { addOrbitControle } from 'src/scene-utils.ts';
-import { addFrameCallback, CAMERA, RENDERER, SCENE } from 'src/setup-scene.ts';
+import { addFrameCallback, addSceneSwitchCallback, CAMERA, RENDERER, SCENE } from 'src/setup-scene.ts';
 import { TerrainMaterial } from 'src/shaders/terrain-material.ts';
 import { addSlider } from 'src/ui.ts';
 import { AgXToneMapping, BufferAttribute, BufferGeometry, Fog, Mesh, Vector3 } from 'three';
@@ -42,16 +42,11 @@ export function terrainInfiniteScene(this: any) {
   CAMERA.rotation.x -= 0.4;
   CAMERA.rotation.y -= 0.2;
   CAMERA.rotation.z -= 0.06;
-
   addOrbitControle(new Vector3(-3, 4, 8));
-
 
   createUi(args);
 
-
-
-
-  function getNearbyKeys(center: Vector3, radius: number): string[] {
+  function getNearbyChunkPositionKeys(center: Vector3, radius: number): string[] {
     const keys: string[] = [];
     const cx = Math.round(center.x);
     const cz = Math.round(center.z);
@@ -73,34 +68,44 @@ export function terrainInfiniteScene(this: any) {
 
   addFrameCallback(() => {
     generateNearbyChunksParallel();
-  })
+  });
 
+
+  const worker = setupTerrainWorker();
 
   const scheduledKeys: Set<string> = new Set();
 
-  const w = new Worker(new URL('../generators/terrainworker.ts', import.meta.url), {type: 'module'});
+  function setupTerrainWorker() {
+    const worker = new Worker(new URL('../generators/terrainworker.ts', import.meta.url), {type: 'module'});
 
-  w.onmessage = (e) => {
-    const {positions, normals, index, gridKey} = e.data;
-    const terrainGeometry = new BufferGeometry();
+    addSceneSwitchCallback(() => {
+      worker.terminate();
+    })
 
-    terrainGeometry.setAttribute(
-      'position',
-      new BufferAttribute(new Float32Array(positions), 3)
-    );
-    terrainGeometry.setAttribute(
-      'normal',
-      new BufferAttribute(new Float32Array(normals), 3)
-    );
-    terrainGeometry.setIndex(new BufferAttribute(new Uint32Array(index), 1));
+    worker.onmessage = (e) => {
+      const {positions, normals, index, gridKey} = e.data;
+      const terrainGeometry = new BufferGeometry();
 
-    const newTerrain = new Mesh(terrainGeometry, material);
-    newTerrain.position.x = +gridKey.split(',')[0] * 10;
-    newTerrain.position.z = +gridKey.split(',')[1] * 10;
-    terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
-    SCENE.add(newTerrain);
-    scheduledKeys.delete(gridKey);
-  };
+      terrainGeometry.setAttribute(
+        'position',
+        new BufferAttribute(new Float32Array(positions), 3)
+      );
+      terrainGeometry.setAttribute(
+        'normal',
+        new BufferAttribute(new Float32Array(normals), 3)
+      );
+      terrainGeometry.setIndex(new BufferAttribute(new Uint32Array(index), 1));
+
+      const newTerrain = new Mesh(terrainGeometry, material);
+      newTerrain.position.x = +gridKey.split(',')[0] * 10;
+      newTerrain.position.z = +gridKey.split(',')[1] * 10;
+      terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
+      SCENE.add(newTerrain);
+      scheduledKeys.delete(gridKey);
+    };
+    return worker;
+  }
+
 
   function generateNearbyChunksParallel() {
     const camPosInGrid = CAMERA.position.clone().multiplyScalar(0.1);
@@ -108,12 +113,12 @@ export function terrainInfiniteScene(this: any) {
 
     const renderDistance = Math.floor(args.renderDistance);
 
-    for (const gridKey of getNearbyKeys(camPosInGrid, renderDistance)) {
+    for (const gridKey of getNearbyChunkPositionKeys(camPosInGrid, renderDistance)) {
       if (!terrainGrid.has(gridKey) && !scheduledKeys.has(gridKey)) {
         scheduledKeys.add(gridKey);
         args.posX = +gridKey.split(',')[0] * .4;
         args.posZ = +gridKey.split(',')[1] * .4;
-        w.postMessage({terrainArgs: args, gridKey});
+        worker.postMessage({terrainArgs: args, gridKey});
       }
     }
 

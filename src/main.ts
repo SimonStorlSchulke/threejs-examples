@@ -1,28 +1,19 @@
-import { simpleScene } from "src/scenes/0-simple";
-import { lightScene } from 'src/scenes/1-light.ts';
 import { terrainScene } from 'src/scenes/3-terrain.ts';
 import { terrainInfiniteScene } from 'src/scenes/4-terrain-infinite.ts';
-import { wireBridgesScene } from "./scenes/2-wirebridges";
 import { initThree, resetScene } from "./setup-scene";
 import "./style.css";
 
 initThree();
 
 const scenes = [
-  simpleScene,
-  lightScene,
-  wireBridgesScene,
-  terrainScene,
   terrainInfiniteScene,
+  terrainScene,
 ];
 
 
 let currentSceneId = sceneIndexFromUrl();
 
-scenes[currentSceneId]();
-updateTitle();
-
-// -------- scene switcher --------------------
+stepScenes(0)
 
 document
   .querySelector(".previous")
@@ -41,8 +32,8 @@ function stepScenes(step: number) {
   if (currentSceneId + step < 0) currentSceneId = scenes.length - 1;
   else if (currentSceneId + step > scenes.length - 1) currentSceneId = 0;
   else currentSceneId += step;
-  console.log(window.location.origin + "?scene=" + currentSceneId)
-  window.history.pushState({}, "", window.location.origin + "?scene=" + currentSceneId);
+  console.log(window.location.pathname + "?scene=" + currentSceneId)
+  window.history.pushState({}, "", window.location.pathname + "?scene=" + currentSceneId);
   resetScene();
   scenes[currentSceneId]();
   updateTitle();

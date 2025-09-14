@@ -39,6 +39,7 @@ export function terrainScene(this: any) {
     depth: 12,
     posX: 0,
     posZ: 0,
+    renderDistance: 5,
   }
 
 

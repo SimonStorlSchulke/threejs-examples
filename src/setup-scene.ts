@@ -9,10 +9,14 @@ export let RENDERER = new THREE.WebGLRenderer();
 export let clock = new THREE.Clock();
 
 let frameCallbacks: FrameCallback[] = [];
+let sceneSwitchCallBacks: (() => void)[] = [];
 
 
 export function resetScene() {
     frameCallbacks = [];
+    for (const callback of sceneSwitchCallBacks) {
+        callback();
+    }
     SCENE.clear();
     CAMERA = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
     CAMERA.position.z = 10;
@@ -33,6 +37,10 @@ export function initThree() {
 
 export function addFrameCallback(callback: FrameCallback) {
     frameCallbacks.push(callback);
+}
+
+export function addSceneSwitchCallback(callback: () => void) {
+    sceneSwitchCallBacks.push(callback);
 }
 
 function animate() {
