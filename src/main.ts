@@ -41,7 +41,8 @@ function stepScenes(step: number) {
   if (currentSceneId + step < 0) currentSceneId = scenes.length - 1;
   else if (currentSceneId + step > scenes.length - 1) currentSceneId = 0;
   else currentSceneId += step;
-  window.history.pushState({}, "", window.location.origin + "/" + currentSceneId);
+  console.log(window.location.origin + "?scene=" + currentSceneId)
+  window.history.pushState({}, "", window.location.origin + "?scene=" + currentSceneId);
   resetScene();
   scenes[currentSceneId]();
   updateTitle();
@@ -55,6 +56,6 @@ function updateTitle() {
 }
 
 function sceneIndexFromUrl() {
-  return Number(window.location.pathname.substring(1));
+  return Number(window.location.search.split('scene=')[1] ?? 0);
 }
 

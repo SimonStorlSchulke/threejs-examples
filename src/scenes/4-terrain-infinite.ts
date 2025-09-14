@@ -27,7 +27,7 @@ export function terrainInfiniteScene(this: any) {
     riverWidth: 0.5,
     offset: 0.35,
     octaves: 10,
-    resolution: 256,
+    resolution: 128,
     width: 10,
     depth: 10,
     posX: 0,
@@ -72,7 +72,7 @@ export function terrainInfiniteScene(this: any) {
   }
 
   addFrameCallback(() => {
-    lod();
+    generateNearbyChunksParallel();
   })
 
 
@@ -81,7 +81,7 @@ export function terrainInfiniteScene(this: any) {
   const w = new Worker(new URL('../generators/terrainworker.ts', import.meta.url), {type: 'module'});
 
   w.onmessage = (e) => {
-    const {positions, normals, index, meshPosX, meshPosZ, gridKey} = e.data;
+    const {positions, normals, index, gridKey} = e.data;
     const terrainGeometry = new BufferGeometry();
 
     terrainGeometry.setAttribute(
@@ -94,32 +94,26 @@ export function terrainInfiniteScene(this: any) {
     );
     terrainGeometry.setIndex(new BufferAttribute(new Uint32Array(index), 1));
 
-
     const newTerrain = new Mesh(terrainGeometry, material);
-    newTerrain.position.x = meshPosX;
-    newTerrain.position.z = meshPosZ;
+    newTerrain.position.x = +gridKey.split(',')[0] * 10;
+    newTerrain.position.z = +gridKey.split(',')[1] * 10;
     terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
     SCENE.add(newTerrain);
     scheduledKeys.delete(gridKey);
   };
 
-  function lod() {
+  function generateNearbyChunksParallel() {
     const camPosInGrid = CAMERA.position.clone().multiplyScalar(0.1);
     camPosInGrid.y = 0;
 
     const renderDistance = Math.floor(args.renderDistance);
 
-    args.resolution = 128;
     for (const gridKey of getNearbyKeys(camPosInGrid, renderDistance)) {
       if (!terrainGrid.has(gridKey) && !scheduledKeys.has(gridKey)) {
-
         scheduledKeys.add(gridKey);
         args.posX = +gridKey.split(',')[0] * .4;
         args.posZ = +gridKey.split(',')[1] * .4;
-
-        w.postMessage(structuredClone({terrainArgs: args, gridKey}));
-
-
+        w.postMessage({terrainArgs: args, gridKey});
       }
     }
 
@@ -136,17 +130,13 @@ export function terrainInfiniteScene(this: any) {
 
   function createUi(args: TerrainArgs) {
     const regenerate = () => {
-
       for (const terrainKv of terrainGrid) {
         SCENE.remove(terrainKv[1].mesh);
         terrainGrid.delete(terrainKv[0]);
       }
 
       SCENE.fog = new Fog(0xd3dde2, 4, args.renderDistance * 10 - 2);
-
-      lod();
-
-
+      generateNearbyChunksParallel();
     }
 
     const argSlider = (name: string, min: number, max: number, type: 'range' | 'number' = 'range', isInt = false) => {
@@ -168,6 +158,7 @@ export function terrainInfiniteScene(this: any) {
     argSlider('altitude', -1, 1);
     argSlider('offset', 0, 1);
     argSlider('renderDistance', 2, 10);
+    argSlider('resolution', 32, 256);
   }
 
 
