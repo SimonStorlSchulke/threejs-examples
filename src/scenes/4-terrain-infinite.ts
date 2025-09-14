@@ -74,6 +74,7 @@ export function terrainInfiniteScene(this: any) {
   const worker = setupTerrainWorker();
 
   const scheduledKeys: Set<string> = new Set();
+  const needRerenderKeys: Set<string> = new Set();
 
   function setupTerrainWorker() {
     const worker = new Worker(new URL('../generators/terrainworker.ts', import.meta.url), {type: 'module'});
@@ -84,6 +85,10 @@ export function terrainInfiniteScene(this: any) {
 
     worker.onmessage = (e) => {
       const {positions, normals, index, gridKey} = e.data;
+      if(terrainGrid.has(gridKey)) {
+        SCENE.remove(terrainGrid.get(gridKey)!.mesh);
+        terrainGrid.delete(gridKey);
+      }
       const terrainGeometry = new BufferGeometry();
 
       terrainGeometry.setAttribute(
@@ -114,7 +119,8 @@ export function terrainInfiniteScene(this: any) {
     const renderDistance = Math.floor(args.renderDistance);
 
     for (const gridKey of getNearbyChunkPositionKeys(camPosInGrid, renderDistance)) {
-      if (!terrainGrid.has(gridKey) && !scheduledKeys.has(gridKey)) {
+      if (needRerenderKeys.has(gridKey) || (!terrainGrid.has(gridKey) && !scheduledKeys.has(gridKey))) {
+        needRerenderKeys.delete(gridKey);
         scheduledKeys.add(gridKey);
         args.posX = +gridKey.split(',')[0] * .4;
         args.posZ = +gridKey.split(',')[1] * .4;
@@ -136,8 +142,7 @@ export function terrainInfiniteScene(this: any) {
   function createUi(args: TerrainArgs) {
     const regenerate = () => {
       for (const terrainKv of terrainGrid) {
-        SCENE.remove(terrainKv[1].mesh);
-        terrainGrid.delete(terrainKv[0]);
+        needRerenderKeys.add(terrainKv[0]);
       }
 
       SCENE.fog = new Fog(0xd3dde2, 4, args.renderDistance * 10 - 2);
