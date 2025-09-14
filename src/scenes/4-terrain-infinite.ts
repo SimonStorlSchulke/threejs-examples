@@ -1,10 +1,10 @@
 import { addSky } from 'src/generators/sky.ts';
-import { generateTerrain, TerrainArgs } from 'src/generators/terrain.ts';
+import { TerrainArgs } from 'src/generators/terrain.ts';
 import { addOrbitControle } from 'src/scene-utils.ts';
 import { addFrameCallback, CAMERA, RENDERER, SCENE } from 'src/setup-scene.ts';
 import { TerrainMaterial } from 'src/shaders/terrain-material.ts';
 import { addSlider } from 'src/ui.ts';
-import { AgXToneMapping, Fog, Mesh, Vector3 } from 'three';
+import { AgXToneMapping, BufferAttribute, BufferGeometry, Fog, Mesh, Vector3 } from 'three';
 
 
 export function terrainInfiniteScene(this: any) {
@@ -37,7 +37,7 @@ export function terrainInfiniteScene(this: any) {
 
   RENDERER.toneMapping = AgXToneMapping;
   addSky(70, 120);
-  SCENE.fog = new Fog( 0xd3dde2, 4, args.renderDistance * 10 - 2 );
+  SCENE.fog = new Fog(0xd3dde2, 4, args.renderDistance * 10 - 2);
   CAMERA.position.set(-3, 4, 8);
   CAMERA.rotation.x -= 0.4;
   CAMERA.rotation.y -= 0.2;
@@ -49,9 +49,6 @@ export function terrainInfiniteScene(this: any) {
   createUi(args);
 
 
-  addFrameCallback(() => {
-    lod();
-  })
 
 
   function getNearbyKeys(center: Vector3, radius: number): string[] {
@@ -74,33 +71,55 @@ export function terrainInfiniteScene(this: any) {
     return keys;
   }
 
+  addFrameCallback(() => {
+    lod();
+  })
+
+
+  const scheduledKeys: Set<string> = new Set();
+
+  const w = new Worker(new URL('../generators/terrainworker.ts', import.meta.url), {type: 'module'});
+
+  w.onmessage = (e) => {
+    const {positions, normals, index, meshPosX, meshPosZ, gridKey} = e.data;
+    const terrainGeometry = new BufferGeometry();
+
+    terrainGeometry.setAttribute(
+      'position',
+      new BufferAttribute(new Float32Array(positions), 3)
+    );
+    terrainGeometry.setAttribute(
+      'normal',
+      new BufferAttribute(new Float32Array(normals), 3)
+    );
+    terrainGeometry.setIndex(new BufferAttribute(new Uint32Array(index), 1));
+
+
+    const newTerrain = new Mesh(terrainGeometry, material);
+    newTerrain.position.x = meshPosX;
+    newTerrain.position.z = meshPosZ;
+    terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
+    SCENE.add(newTerrain);
+    scheduledKeys.delete(gridKey);
+  };
+
   function lod() {
     const camPosInGrid = CAMERA.position.clone().multiplyScalar(0.1);
     camPosInGrid.y = 0;
-    const camX = Math.round(camPosInGrid.x);
-    const camZ = Math.round(camPosInGrid.z);
 
     const renderDistance = Math.floor(args.renderDistance);
 
+    args.resolution = 128;
     for (const gridKey of getNearbyKeys(camPosInGrid, renderDistance)) {
+      if (!terrainGrid.has(gridKey) && !scheduledKeys.has(gridKey)) {
 
-      const iX = +gridKey.split(',')[0];
-      const iZ = +gridKey.split(',')[1];
-      args.resolution = 128;
+        scheduledKeys.add(gridKey);
+        args.posX = +gridKey.split(',')[0] * .4;
+        args.posZ = +gridKey.split(',')[1] * .4;
+
+        w.postMessage(structuredClone({terrainArgs: args, gridKey}));
 
 
-      if (!terrainGrid.has(gridKey)) {
-
-
-
-        args.posX = iX * .4;
-        args.posZ = iZ * .4;
-
-        const newTerrain = new Mesh(generateTerrain(args), material);
-        newTerrain.position.x = iX * 10;
-        newTerrain.position.z = iZ * 10;
-        terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
-        SCENE.add(newTerrain)
       }
     }
 
@@ -113,9 +132,6 @@ export function terrainInfiniteScene(this: any) {
         terrainGrid.delete(gridKey);
       }
     }
-
-
-    console.log(camX, camZ);
   }
 
   function createUi(args: TerrainArgs) {
@@ -126,7 +142,7 @@ export function terrainInfiniteScene(this: any) {
         terrainGrid.delete(terrainKv[0]);
       }
 
-      SCENE.fog = new Fog( 0xd3dde2, 4, args.renderDistance * 10 - 2 );
+      SCENE.fog = new Fog(0xd3dde2, 4, args.renderDistance * 10 - 2);
 
       lod();
 
