@@ -47,7 +47,7 @@ export function terrainInfiniteScene(this: any) {
   createUi(args);
 
   function getNearbyChunkPositionKeys(center: Vector3, radius: number): string[] {
-    const keys: string[] = [];
+    const keys: { key: string, distance: number }[] = [];
     const cx = Math.round(center.x);
     const cz = Math.round(center.z);
 
@@ -57,13 +57,14 @@ export function terrainInfiniteScene(this: any) {
       for (let z = cz - r; z <= cz + r; z++) {
         const dx = x - center.x;
         const dz = z - center.z;
-        if (Math.sqrt(dx * dx + dz * dz) <= radius) {
-          keys.push(`${x},${z}`);
+        const distance = Math.sqrt(dx * dx + dz * dz);
+        if (distance <= radius) {
+          keys.push({key: `${x},${z}`, distance});
         }
       }
     }
-
-    return keys;
+    keys.sort((a, b) => a.distance - b.distance);
+    return keys.map(k => k.key);
   }
 
   addFrameCallback(() => {
