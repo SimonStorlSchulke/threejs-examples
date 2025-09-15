@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { BufferGeometry, MathUtils } from 'three';
+import { BufferGeometry } from 'three';
 
 export function displaceY(
   geometry: BufferGeometry,
