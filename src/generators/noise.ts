@@ -7,7 +7,7 @@ export type FbmArgs = {
   frequency: number,
   amplitude: number,
   gain: number,
-  offset: number,
+  smoothLowerPlanes: number,
   seed: number,
 }
 
@@ -19,7 +19,7 @@ export class FbmNoiseBuilder {
     frequency: 0.1,
     amplitude: 0.8,
     lacunarity: 1.7,
-    offset: 0.75,
+    smoothLowerPlanes: 0.75,
   }
 
   octaves(value: number) {
@@ -53,7 +53,7 @@ export class FbmNoiseBuilder {
   }
 
   offset(value: number) {
-    this.args.offset = value;
+    this.args.smoothLowerPlanes = value;
     return this;
   }
 
@@ -79,7 +79,7 @@ export function createFbmNoise(args: FbmArgs) {
       y *= args.lacunarity;
       amp *= args.gain;
     }
-    return value + args.offset;
+    return value + args.smoothLowerPlanes;
   }
 
 }

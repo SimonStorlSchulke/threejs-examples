@@ -13,7 +13,7 @@ const scenes = [
 
 let currentSceneId = sceneIndexFromUrl();
 
-stepScenes(0)
+stepScenes(0);
 
 document
   .querySelector(".previous")

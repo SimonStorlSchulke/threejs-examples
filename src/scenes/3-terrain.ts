@@ -31,8 +31,10 @@ export function terrainScene(this: any) {
     erosionSoftness: 0,
     rivers: 0.0,
     riversSeed: 0,
+    riverFalloff: 0.06,
+    riversFrequency: 0.13,
     riverWidth: 0.5,
-    offset: 0.6,
+    smoothLowerPlanes: 0.6,
     octaves: 8,
     resolution: 256,
     width: 12,
@@ -74,7 +76,7 @@ function createUi(args: TerrainArgs) {
   argSlider('riversSeed', -99999999, 99999999, 'number', true);
   argSlider('riverWidth', 0, 1);
   argSlider('altitude', 0, 1);
-  argSlider('offset', 0, 1);
+  argSlider('smoothLowerPlanes', 0, 1);
   argSlider('octaves', 1, 16);
   argSlider('resolution', 8, 512);
   argSlider('posX', 0, 2);

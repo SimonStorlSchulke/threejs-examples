@@ -20,12 +20,14 @@ export function terrainInfiniteScene(this: any) {
     amplitude: 0.5,
     altitude: 0.1,
     falloff: 0.0,
-    erosion: 0.7,
+    erosion: 0.6,
     erosionSoftness: 0.3,
-    rivers: 0.1,
+    rivers: 0.18,
     riversSeed: 0,
-    riverWidth: 0.5,
-    offset: 0.35,
+    riverWidth: 0.3,
+    riverFalloff: 0.06,
+    riversFrequency: 0.13,
+    smoothLowerPlanes: 0,
     octaves: 10,
     resolution: 128,
     width: 10,
@@ -160,14 +162,15 @@ export function terrainInfiniteScene(this: any) {
     argSlider('seed', -99999999, 99999999, 'number', true);
     argSlider('frequency', 0, 0.3);
     argSlider('amplitude', 0, 3);
-    argSlider('falloff', 0, 1);
-    argSlider('erosion', 0, 0.7);
+    argSlider('erosion', 0, 1);
     argSlider('erosionSoftness', 0, 1);
     argSlider('rivers', 0, 0.8);
+    argSlider('riversFrequency', 0.1, 2.0);
     argSlider('riversSeed', -99999999, 99999999, 'number', true);
     argSlider('riverWidth', 0, 1);
+    argSlider('riverFalloff', 0, 1);
     argSlider('altitude', -1, 1);
-    argSlider('offset', 0, 1);
+    argSlider('smoothLowerPlanes', 0, 1);
     argSlider('renderDistance', 2, 10);
     argSlider('resolution', 32, 256);
   }
