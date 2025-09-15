@@ -54,7 +54,6 @@ function animate() {
 
 function updateRendererSize() {
     RENDERER.setSize( window.innerWidth, window.innerHeight );
-    RENDERER.setPixelRatio(0.4)
     CAMERA.aspect = window.innerWidth / window.innerHeight;
     CAMERA.updateProjectionMatrix();
 }
