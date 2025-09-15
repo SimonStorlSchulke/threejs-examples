@@ -23,9 +23,10 @@ export function terrainInfiniteScene(this: any) {
     erosion: 0.6,
     erosionSoftness: 0.3,
     rivers: 0.18,
-    riversSeed: 0,
-    riverWidth: 0.3,
+    riverWidth: 0.35,
     riverFalloff: 0.06,
+    lakes: 0.5,
+    lakesFalloff: 0.5,
     riversFrequency: 0.13,
     smoothLowerPlanes: 0,
     octaves: 10,
@@ -84,10 +85,10 @@ export function terrainInfiniteScene(this: any) {
 
     addSceneSwitchCallback(() => {
       worker.terminate();
-    })
+    });
 
     worker.onmessage = (e) => {
-      const {positions, normals, index, gridKey} = e.data;
+      const {positions, normals, index, biome, gridKey} = e.data;
       if(terrainGrid.has(gridKey)) {
         SCENE.remove(terrainGrid.get(gridKey)!.mesh);
         terrainGrid.delete(gridKey);
@@ -102,6 +103,11 @@ export function terrainInfiniteScene(this: any) {
         'normal',
         new BufferAttribute(new Float32Array(normals), 3)
       );
+      terrainGeometry.setAttribute(
+        'biome',
+        new BufferAttribute(new Float32Array(biome), 3)
+      );
+      
       terrainGeometry.setIndex(new BufferAttribute(new Uint32Array(index), 1));
 
       const newTerrain = new Mesh(terrainGeometry, material);
@@ -110,6 +116,8 @@ export function terrainInfiniteScene(this: any) {
       terrainGrid.set(gridKey, {mesh: newTerrain, resolution: args.resolution});
       SCENE.add(newTerrain);
       scheduledKeys.delete(gridKey);
+      material.needsUpdate = true;
+      terrainGeometry.attributes.biome.needsUpdate = true;
     };
     return worker;
   }
@@ -166,13 +174,15 @@ export function terrainInfiniteScene(this: any) {
     argSlider('erosionSoftness', 0, 1);
     argSlider('rivers', 0, 0.8);
     argSlider('riversFrequency', 0.1, 2.0);
-    argSlider('riversSeed', -99999999, 99999999, 'number', true);
     argSlider('riverWidth', 0, 1);
     argSlider('riverFalloff', 0, 1);
+    argSlider('lakes', 0, 1);
+    argSlider('lakesFalloff', 0, 1);
     argSlider('altitude', -1, 1);
     argSlider('smoothLowerPlanes', 0, 1);
     argSlider('renderDistance', 2, 10);
     argSlider('resolution', 32, 256);
+    argSlider('octaves', 1, 10);
   }
 
 

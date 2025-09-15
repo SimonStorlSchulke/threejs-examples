@@ -1,5 +1,6 @@
 import alea from 'alea';
 import { createNoise2D, NoiseFunction2D } from 'simplex-noise';
+import { MathUtils } from 'three';
 
 export type FbmArgs = {
   octaves: number,
@@ -82,4 +83,15 @@ export function createFbmNoise(args: FbmArgs) {
     return value + args.smoothLowerPlanes;
   }
 
+}
+
+export function normalizeFbmRange(fbmNoise: number) {
+  return MathUtils.mapLinear(fbmNoise, -0.4, 0.9, 0, 1);
+}
+
+
+export function debugMinMax(value: number, checkBelow: number, checkAbove: number) {
+  if(value < checkBelow) return -.4;
+  if(value > checkAbove) return .4;
+  return 0;
 }

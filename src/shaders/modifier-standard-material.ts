@@ -8,6 +8,10 @@ export class ModifiedStandardMaterial extends MeshStandardMaterial {
     this.onBeforeCompile = (shader) => {
       shader.vertexShader = `
         #define STANDARD
+
+		attribute vec3 biome;
+		varying vec3 v_Biome;
+
         varying vec3 vViewPosition;
         varying vec3 v_Position;
         varying vec3 v_Normal;
@@ -52,6 +56,7 @@ export class ModifiedStandardMaterial extends MeshStandardMaterial {
           
           v_Position = (modelMatrix * vec4(position, 1.0)).xyz;
           v_Normal = normal;
+		  v_Biome = biome;
           
         #ifdef USE_TRANSMISSION
           vWorldPosition = worldPosition.xyz;
@@ -119,6 +124,7 @@ varying vec3 vViewPosition;
 varying vec3 vWorldPosition;
 varying vec3 v_Position;
 varying vec3 v_Normal;
+varying vec3 v_Biome;
 #include <common>
 #include <packing>
 #include <dithering_pars_fragment>

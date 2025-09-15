@@ -11,6 +11,7 @@ self.onmessage = (m) => {
           positions: geometry.attributes.position.array,
           normals: geometry.attributes.normal.array,
           uvs: geometry.attributes.uv?.array,
+          biome: geometry.attributes.biome?.array,
           index,
           gridKey: m.data.gridKey,
       },
